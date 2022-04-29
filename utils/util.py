@@ -1,9 +1,13 @@
-import torch
-import pandas as pd
+import pathlib
+import os
+import shutil
+import yaml
 from pathlib import Path
 from itertools import repeat
-from collections import OrderedDict
-import yaml
+
+import torch
+import pandas as pd
+
 
 
 def ensure_dir(dirname):
@@ -43,11 +47,18 @@ def prepare_device(n_gpu_use):
     list_ids = list(range(n_gpu_use))
     return device, list_ids
 
-def delete_last_folder():
+def delete_last_folder(config_dict):
     """
     Removes last log + model folders, this is useful for inference + test runs.
     """
-    pass
+    model_name = config_dict['name']
+    latest_dir_log = max(pathlib.Path('saved/log/' + model_name + '/').glob('*/'), key=os.path.getmtime)
+    latest_dir_models = max(pathlib.Path('saved/models/' + model_name + '/').glob('*/'), key=os.path.getmtime)
+    
+    shutil.rmtree(str(latest_dir_log) + '/')
+    shutil.rmtree(str(latest_dir_models) + '/')
+    
+    print('Removed the latest checkpoint folder')
 
 class MetricTracker:
     def __init__(self, *keys, writer=None):
