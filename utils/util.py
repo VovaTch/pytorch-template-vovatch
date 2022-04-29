@@ -1,9 +1,9 @@
-import json
 import torch
 import pandas as pd
 from pathlib import Path
 from itertools import repeat
 from collections import OrderedDict
+import yaml
 
 
 def ensure_dir(dirname):
@@ -11,15 +11,15 @@ def ensure_dir(dirname):
     if not dirname.is_dir():
         dirname.mkdir(parents=True, exist_ok=False)
 
-def read_json(fname):
+def read_yaml(fname):
     fname = Path(fname)
     with fname.open('rt') as handle:
-        return json.load(handle, object_hook=OrderedDict)
+        return yaml.safe_load(handle)
 
-def write_json(content, fname):
+def write_yaml(content, fname):
     fname = Path(fname)
     with fname.open('wt') as handle:
-        json.dump(content, handle, indent=4, sort_keys=False)
+        yaml.dump(content, handle, indent=1, sort_keys=False)
 
 def inf_loop(data_loader):
     ''' wrapper function for endless data loader. '''
@@ -42,6 +42,12 @@ def prepare_device(n_gpu_use):
     device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
     list_ids = list(range(n_gpu_use))
     return device, list_ids
+
+def delete_last_folder():
+    """
+    Removes last log + model folders, this is useful for inference + test runs.
+    """
+    pass
 
 class MetricTracker:
     def __init__(self, *keys, writer=None):

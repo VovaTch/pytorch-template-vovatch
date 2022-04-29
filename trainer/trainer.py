@@ -1,6 +1,8 @@
 import numpy as np
 import torch
 from torchvision.utils import make_grid
+from colorama import Fore
+
 from base import BaseTrainer
 from utils import inf_loop, MetricTracker
 
@@ -39,6 +41,9 @@ class Trainer(BaseTrainer):
         """
         self.model.train()
         self.train_metrics.reset()
+        
+        self.logger.debug(Fore.YELLOW + '\n -------------- << T R A I N I N G >> --------------\n' + Fore.RESET)
+        
         for batch_idx, (data, target) in enumerate(self.data_loader):
             data, target = data.to(self.device), target.to(self.device)
 
@@ -54,19 +59,17 @@ class Trainer(BaseTrainer):
                 self.train_metrics.update(met.__name__, met(output, target))
 
             if batch_idx % self.log_step == 0:
-                self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
-                    epoch,
-                    self._progress(batch_idx),
-                    loss.item()))
-                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
+                self.logger.debug(Fore.GREEN + f'Train Epoch: {epoch} {self._progress(batch_idx)} Loss:' + 
+                                  Fore.CYAN + f' {loss.item():.6f}' + Fore.RESET)
 
             if batch_idx == self.len_epoch:
                 break
+            
         log = self.train_metrics.result()
 
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
-            log.update(**{'val_'+k : v for k, v in val_log.items()})
+            log.update(**{Fore.LIGHTMAGENTA_EX + 'val_'+ k + Fore.RESET : v for k, v in val_log.items()})
 
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
@@ -81,6 +84,9 @@ class Trainer(BaseTrainer):
         """
         self.model.eval()
         self.valid_metrics.reset()
+        
+        self.logger.debug(Fore.LIGHTRED_EX + '\n -------------- << E V A L U A T I O N >> --------------\n' + Fore.RESET)
+        
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
                 data, target = data.to(self.device), target.to(self.device)

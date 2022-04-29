@@ -1,10 +1,11 @@
 import torch.nn as nn
 import torch.nn.functional as F
+
 from base import BaseModel
 
 
 class MnistModel(BaseModel):
-    def __init__(self, num_classes=10):
+    def __init__(self, num_classes=10, hidden_dim=8):
         super().__init__()
         self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
         self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
