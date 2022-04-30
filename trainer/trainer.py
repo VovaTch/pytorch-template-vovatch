@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import torch
 from torchvision.utils import make_grid
@@ -42,6 +44,9 @@ class Trainer(BaseTrainer):
         self.model.train()
         self.train_metrics.reset()
         
+        if self.config['lr_scheduler']['type'] == 'OneCycleLR':
+            oclr_scheduler = copy.deepcopy(self.lr_scheduler)
+        
         self.logger.debug(Fore.YELLOW + '\n -------------- << T R A I N I N G >> --------------\n' + Fore.RESET)
         
         for batch_idx, (data, target) in enumerate(self.data_loader):
@@ -65,13 +70,16 @@ class Trainer(BaseTrainer):
             if batch_idx == self.len_epoch:
                 break
             
+            if self.config['lr_scheduler']['type'] == 'OneCycleLR':
+                oclr_scheduler.step()
+            
         log = self.train_metrics.result()
 
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
             log.update(**{Fore.LIGHTMAGENTA_EX + 'val_'+ k + Fore.RESET : v for k, v in val_log.items()})
 
-        if self.lr_scheduler is not None:
+        if self.lr_scheduler is not None and self.config['lr_scheduler']['type'] != 'OneCycleLR':
             self.lr_scheduler.step()
         return log
 
