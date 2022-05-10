@@ -13,3 +13,7 @@ This is a fork of the Pytorch Project Template from [this link](https://github.c
 # How to use:
 
 * Either download it as a zip file, or use `git clone https://github.com/VovaTch/pytorch-template-vovatch.git`.
+
+# Work in Progress:
+
+* Support for ClearML
